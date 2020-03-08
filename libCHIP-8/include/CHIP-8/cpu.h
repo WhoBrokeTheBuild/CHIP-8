@@ -31,7 +31,7 @@ extern uint16_t I;
 
 extern uint16_t PC;
 
-extern uint8_t SP;
+extern uint16_t SP;
 
 instruction_t fetch();
 

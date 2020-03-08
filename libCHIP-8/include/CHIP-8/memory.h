@@ -4,6 +4,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#define DIGIT_SPRITE_OFFSET (0x000)
+#define BYTES_PER_DIGIT     (5)
+
 extern uint8_t RAM[0xFFF];
 
 extern uint16_t Stack[16];
@@ -21,5 +24,7 @@ void push_word(uint16_t data);
 uint16_t pop_word();
 
 bool load_rom(const char * filename);
+
+void init_ram();
 
 #endif // MEMORY_H
