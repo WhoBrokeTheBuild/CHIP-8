@@ -49,7 +49,7 @@ int main(int argc, char ** argv)
         return 0;
     }
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_EVENTS) < 0) {
         fprintf(stderr, "Failed to initialize SDL2, %s\n", SDL_GetError());
         return 1;
     }
@@ -97,11 +97,13 @@ int main(int argc, char ** argv)
     int pitch = 0;
 
     int keymap[] = {
-        SDLK_x, SDLK_1, SDLK_2, SDLK_3, // 0, 1, 2, 3
-        SDLK_q, SDLK_w, SDLK_e, SDLK_a, // 4, 5, 6, 7
-        SDLK_s, SDLK_d, SDLK_z, SDLK_c, // 8, 9, A, B
-        SDLK_4, SDLK_r, SDLK_f, SDLK_v, // C, D, E, F
+        SDL_SCANCODE_X, SDL_SCANCODE_1, SDL_SCANCODE_2, SDL_SCANCODE_3, // 0, 1, 2, 3
+        SDL_SCANCODE_Q, SDL_SCANCODE_W, SDL_SCANCODE_E, SDL_SCANCODE_A, // 4, 5, 6, 7
+        SDL_SCANCODE_S, SDL_SCANCODE_D, SDL_SCANCODE_Z, SDL_SCANCODE_C, // 8, 9, A, B
+        SDL_SCANCODE_4, SDL_SCANCODE_R, SDL_SCANCODE_F, SDL_SCANCODE_V, // C, D, E, F
     };
+
+    const Uint8 * keystate = SDL_GetKeyboardState(NULL);
 
     SDL_Event evt;
     bool running = true;
@@ -110,30 +112,18 @@ int main(int argc, char ** argv)
             if (evt.type == SDL_QUIT) {
                 running = false;
             }
-            else if (evt.type == SDL_KEYDOWN) {
-                for (int i = 0; i < sizeof(keymap); ++i) {
-                    if (evt.key.keysym.sym == keymap[i]) {
-                        Keys[i] = true;
-                        if (InputVx >= 0) {
-                            V[InputVx] = i;
-                            InputVx = -1;
-                        }
-                        break;
-                    }
-                }
-            }
-            else if (evt.type == SDL_KEYUP) {
-                for (int i = 0; i < sizeof(keymap); ++i) {
-                    if (evt.key.keysym.sym == keymap[i]) {
-                        Keys[i] = false;
-                        break;
-                    }
-                }
+        }
+
+        for (int j = 0; j < 16; ++j) {
+            Keys[j] = (keystate[keymap[j]] == 1);
+            if (Keys[j] && WaitInputVx >= 0) {
+                V[WaitInputVx] = j;
+                WaitInputVx = -1;
             }
         }
 
-        for (int i = 0; i < 10; ++i) {
-            if (InputVx < 0) {
+        for (int i = 0; i < 16; ++i) {
+            if (WaitInputVx < 0) {
                 execute(fetch());
             }
         }
@@ -167,7 +157,6 @@ int main(int argc, char ** argv)
             .h = SCREEN_HEIGHT * DEFAULT_SCALE,
         };
 
-        SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, buffer, &src, &dst);
         SDL_RenderPresent(renderer);
     }
@@ -182,7 +171,7 @@ int main(int argc, char ** argv)
 
     SDL_Quit();
 
-    cflags_free(flags);
+    // cflags_free(flags);
 
     return 0;
 }

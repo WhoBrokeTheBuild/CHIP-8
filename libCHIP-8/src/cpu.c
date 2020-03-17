@@ -93,9 +93,7 @@ void ADD_Vx_kk(instruction_t inst)
 {
     // printf("ADD V%X %02X\n", inst.x, inst.kk);
     int r = V[inst.x] + inst.kk;
-    if (r > 0xFF) {
-        V[0xF] = 1;
-    }
+    V[0xF] = (r > 0xFF ? 1 : 0);
     V[inst.x] = r;
 }
 
@@ -127,16 +125,14 @@ void ADD_Vx_Vy(instruction_t inst)
 {
     // printf("ADD V%X V%X\n", inst.x, inst.y);
     int r = V[inst.x] + V[inst.y];
-    if (r > 0xFF) {
-        V[0xF] = 1;
-    }
+    V[0xF] = (r > 0xFF ? 1 : 0);
     V[inst.x] = r;
 }
 
 void SUB_Vx_Vy(instruction_t inst)
 {
     // printf("SUB V%X V%X\n", inst.x, inst.y);
-    V[0xF] = (V[inst.x] > V[inst.y] ? 1 : 0);
+    V[0xF] = (V[inst.y] > V[inst.x] ? 1 : 0);
     V[inst.x] -= V[inst.y];
 }
 
@@ -150,7 +146,7 @@ void SHR_Vx_Vy(instruction_t inst)
 void SUBN_Vx_Vy(instruction_t inst)
 {
     // printf("SUBN V%X V%X\n", inst.x, inst.y);
-    V[0xF] = (V[inst.y] > V[inst.x] ? 1 : 0);
+    V[0xF] = (V[inst.y] > V[inst.x] ? 0 : 1);
     V[inst.x] -= V[inst.y];
 }
 
@@ -210,18 +206,18 @@ void JP_V0_aaa(instruction_t inst)
 void RND_Vx_kk(instruction_t inst)
 {
     // printf("JP V%X %02X\n", inst.x, inst.kk);
-    V[inst.x] = (rand() % 255) & inst.kk;
+    V[inst.x] = (rand() % 256) & inst.kk;
 }
 
 void DRW_Vx_Vy_kk(instruction_t inst) 
 {
-    // printf("DRW V%X V%X %d\n", inst.x, inst.y, inst.n);
+    printf("DRW V%X V%X %d\n", inst.x, inst.y, inst.n);
     V[0xF] = 0;
     for (int i = 0; i < inst.n; ++i) {
         uint8_t data = RAM[I + i];
         for (int j = 0; j < 8; ++j) {
-            int x = (V[inst.x] + j - 1) % SCREEN_WIDTH;
-            int y = (V[inst.y] + i - 1) % SCREEN_HEIGHT;
+            int x = (V[inst.x] + j) % SCREEN_WIDTH;
+            int y = (V[inst.y] + i) % SCREEN_HEIGHT;
             int pixel = (data & (0x80 >> j));
             if (VRAM[y][x] > 0 && pixel > 0) {
                 V[0xF] = 1;
@@ -235,6 +231,7 @@ void SKP_Vx(instruction_t inst)
 {
     // printf("SKP V%X\n", inst.x);
     if (Keys[V[inst.x]]) {
+        Keys[V[inst.x]] = false;
         PC += 2;
     }
 }
@@ -269,7 +266,7 @@ void LD_Vx_DT(instruction_t inst)
 void LD_Vx_K(instruction_t inst)
 {
     // printf("LD V%X K\n", inst.x);
-    InputVx = inst.x;
+    WaitInputVx = inst.x;
 }
 
 void LD_DT_Vx(instruction_t inst)

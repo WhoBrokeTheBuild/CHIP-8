@@ -2,4 +2,4 @@
 
 bool Keys[16] = { false };
 
-int InputVx = -1;
+int WaitInputVx = -1;

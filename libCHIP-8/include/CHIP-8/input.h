@@ -5,6 +5,6 @@
 
 extern bool Keys[16];
 
-extern int InputVx;
+extern int WaitInputVx;
 
 #endif // INPUT_H

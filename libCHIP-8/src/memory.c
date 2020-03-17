@@ -34,7 +34,7 @@ void write_word(uint16_t addr, uint8_t data)
 void push_word(uint16_t data)
 {
     Stack[SP] = data;
-    SP++;
+    ++SP;
 }
 
 uint16_t pop_word()
