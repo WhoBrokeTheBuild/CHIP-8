@@ -1,34 +1,23 @@
-#include "memory.h"
+#include "mmu.h"
 #include "cpu.h"
 
 #include <stdio.h>
 #include <string.h>
 
-uint8_t RAM[0xFFF] = { 0 };
+uint8_t VRAM[SCREEN_HEIGHT][SCREEN_WIDTH];
 
-uint16_t Stack[16] = { 0 };
+uint8_t RAM[0x1000];
+
+uint16_t Stack[0x10];
 
 uint8_t read_byte(uint16_t addr)
 {
     return RAM[addr];
 }
 
-uint16_t read_word(uint16_t addr)
-{
-    uint16_t word = read_byte(addr) << 8;
-    word |= read_byte(addr + 1);
-    return word;
-}
-
 void write_byte(uint16_t addr, uint8_t data)
 {
     RAM[addr] = data;
-}
-
-void write_word(uint16_t addr, uint8_t data)
-{
-    write_byte(addr, (uint8_t)(data >> 8));
-    write_byte(addr + 1, (uint8_t)(data & 0xFF));
 }
 
 void push_word(uint16_t data)
@@ -47,7 +36,7 @@ bool load_rom(const char * filename)
 {
     FILE * fp = fopen(filename, "rb");
     if (!fp) {
-        fprintf(stderr, "Failed to open ROM '%s'", filename);
+        fprintf(stderr, "Failed to open ROM '%s'\n", filename);
         return false;
     }
 

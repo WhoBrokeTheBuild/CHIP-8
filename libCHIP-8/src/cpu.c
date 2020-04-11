@@ -1,11 +1,11 @@
 #include "cpu.h"
 #include "input.h"
-#include "memory.h"
+#include "mmu.h"
 #include "timer.h"
-#include "video.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 uint8_t V[16] = { 0 };
 
@@ -20,11 +20,7 @@ typedef void(* instruction_func_t)(instruction_t);
 void CLS(instruction_t inst)
 {
     // printf("CLS\n");
-    for (int y = 0; y < SCREEN_HEIGHT; ++y) {
-        for (int x = 0; x < SCREEN_WIDTH; ++x) {
-            VRAM[y][x] = 0;
-        }
-    }
+    memset(VRAM, 0, sizeof(VRAM));
 }
 
 void RET(instruction_t inst)
@@ -209,16 +205,17 @@ void RND_Vx_kk(instruction_t inst)
     V[inst.x] = (rand() % 256) & inst.kk;
 }
 
-void DRW_Vx_Vy_kk(instruction_t inst) 
+void DRW_Vx_Vy_n(instruction_t inst) 
 {
-    printf("DRW V%X V%X %d\n", inst.x, inst.y, inst.n);
+    // printf("DRW V%X V%X %d\n", inst.x, inst.y, inst.n);
+
     V[0xF] = 0;
-    for (int i = 0; i < inst.n; ++i) {
-        uint8_t data = RAM[I + i];
-        for (int j = 0; j < 8; ++j) {
-            int x = (V[inst.x] + j) % SCREEN_WIDTH;
-            int y = (V[inst.y] + i) % SCREEN_HEIGHT;
-            int pixel = (data & (0x80 >> j));
+    for (int row = 0; row < inst.n; ++row) {
+        uint8_t data = read_byte(I + row);
+        for (int col = 0; col < 8; ++col) {
+            int y = (V[inst.y] + row) % SCREEN_HEIGHT;
+            int x = (V[inst.x] + col) % SCREEN_WIDTH;
+            int pixel = (data & (0x80 >> col));
             if (VRAM[y][x] > 0 && pixel > 0) {
                 V[0xF] = 1;
             }
@@ -296,9 +293,9 @@ void LD_F_Vx(instruction_t inst)
 void LD_B_Vx(instruction_t inst)
 {
     // printf("LD B V%X\n", inst.x);
-    RAM[I + 0] = V[inst.x] / 100;
-    RAM[I + 1] = (V[inst.x] % 100) / 10;
-    RAM[I + 2] = V[inst.x] % 10;
+    write_byte(I + 0, V[inst.x] / 100);
+    write_byte(I + 1, (V[inst.x] % 100) / 10);
+    write_byte(I + 2, V[inst.x] % 10);
 }
 
 void LD_pI_Vx(instruction_t inst)
@@ -353,8 +350,8 @@ void opcode_F(instruction_t inst)
 
 instruction_t fetch()
 {
-    instruction_t inst = { 
-        .raw = read_word(PC),
+    instruction_t inst = {
+        .raw = (read_byte(PC) << 8) | read_byte(PC + 1),
     };
     // printf("[%03X] OP=%X AAA=%03X X=%X Y=%X KK=%02X\n", PC, inst.op, inst.aaa, inst.x, inst.y, inst.kk);
     PC += 2;
@@ -378,7 +375,7 @@ void execute(instruction_t inst)
         [0xA] = LD_I_aaa,
         [0xB] = JP_V0_aaa,
         [0xC] = RND_Vx_kk,
-        [0xD] = DRW_Vx_Vy_kk,
+        [0xD] = DRW_Vx_Vy_n,
         [0xE] = opcode_E,
         [0xF] = opcode_F,
     };

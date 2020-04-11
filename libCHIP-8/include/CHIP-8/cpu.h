@@ -1,29 +1,39 @@
 #ifndef CPU_H
 #define CPU_H
 
+#include "macros.h"
+
+#include <assert.h>
 #include <stdint.h>
 
-typedef struct
+typedef union
 {
-    union {
-        struct {
-            unsigned aaa:12;
-            unsigned op:4;
-        };
-        struct {
-            unsigned n:4;
-            unsigned y:4;
-            unsigned x:4;
-            unsigned :4;
-        };
-        struct {
-            unsigned kk:8;
-            unsigned :8;
-        };
-        uint16_t raw;
-    };
+    PACK(struct
+    {
+        uint16_t aaa:12;
+        uint16_t op:4;
+    });
+
+    PACK(struct
+    {
+        uint16_t n:4;
+        uint16_t y:4;
+        uint16_t x:4;
+        uint16_t :4;
+    });
+
+    PACK(struct
+    {
+        uint16_t kk:8;
+        uint16_t :8;
+    });
+
+    uint16_t raw;
 
 } instruction_t;
+
+static_assert(sizeof(instruction_t) == 2,
+    "sizeof(instruction_t) != 2");
 
 extern uint8_t V[16];
 

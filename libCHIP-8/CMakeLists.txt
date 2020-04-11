@@ -4,13 +4,20 @@
 FILE(
     GLOB_RECURSE
     _SOURCES
-    src/*.h
-    src/*.c
+    "src/*.h"
+    "src/*.c"
+)
+
+FILE(
+    GLOB_RECURSE
+    _INCLUDES
+    "include/*.h"
 )
 
 ADD_LIBRARY(
     libCHIP-8
     ${_SOURCES}
+    ${_INCLUDES}
 )
 
 SET_TARGET_PROPERTIES(

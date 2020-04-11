@@ -40,7 +40,7 @@ IF(NOT SDL2_FOUND)
     ExternalProject_Add(
         thirdparty_SDL2
         GIT_REPOSITORY      "https://github.com/spurious/SDL-mirror.git"
-        GIT_TAG             "master"
+        GIT_TAG             "release-2.0.12"
         GIT_SHALLOW         TRUE
         SOURCE_DIR          ${SDL2_SOURCE_DIR}
         BINARY_DIR          ${SDL2_BINARY_DIR}

@@ -7,17 +7,14 @@
 #define DIGIT_SPRITE_OFFSET (0x000)
 #define BYTES_PER_DIGIT     (5)
 
-extern uint8_t RAM[0xFFF];
+#define SCREEN_WIDTH  (63)
+#define SCREEN_HEIGHT (31)
 
-extern uint16_t Stack[16];
+extern uint8_t VRAM[SCREEN_HEIGHT][SCREEN_WIDTH];
 
 uint8_t read_byte(uint16_t addr);
 
-uint16_t read_word(uint16_t addr);
-
 void write_byte(uint16_t addr, uint8_t data);
-
-void write_word(uint16_t addr, uint8_t data);
 
 void push_word(uint16_t data);
 

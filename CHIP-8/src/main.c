@@ -1,8 +1,7 @@
 #include <CHIP-8/cpu.h>
 #include <CHIP-8/input.h>
-#include <CHIP-8/memory.h>
+#include <CHIP-8/mmu.h>
 #include <CHIP-8/timer.h>
-#include <CHIP-8/video.h>
 
 #include <SDL.h>
 #include <cflags.h>
@@ -134,7 +133,7 @@ int main(int argc, char ** argv)
 
         for (int y = 0; y < SCREEN_HEIGHT; ++y) {
             for (int x = 0; x < SCREEN_WIDTH; ++x) {
-                unsigned offset = (y * BUFFER_HEIGHT * 3) + (x * 3);
+                unsigned offset = (y * pitch) + (x * 3);
                 pixels[offset + 0] = VRAM[y][x];
                 pixels[offset + 1] = VRAM[y][x];
                 pixels[offset + 2] = VRAM[y][x];
